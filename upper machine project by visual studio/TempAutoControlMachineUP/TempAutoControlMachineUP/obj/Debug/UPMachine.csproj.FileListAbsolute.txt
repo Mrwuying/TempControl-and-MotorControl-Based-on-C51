@@ -1,0 +1,9 @@
+G:\作业\大三下学期\物联网大项目（专业综合实训）\上位机\TempAutoControlMachineUP\TempAutoControlMachineUP\bin\Debug\TempAutoControlMachineUP.exe.config
+G:\作业\大三下学期\物联网大项目（专业综合实训）\上位机\TempAutoControlMachineUP\TempAutoControlMachineUP\bin\Debug\TempAutoControlMachineUP.exe
+G:\作业\大三下学期\物联网大项目（专业综合实训）\上位机\TempAutoControlMachineUP\TempAutoControlMachineUP\bin\Debug\TempAutoControlMachineUP.pdb
+G:\作业\大三下学期\物联网大项目（专业综合实训）\上位机\TempAutoControlMachineUP\TempAutoControlMachineUP\obj\Debug\TempAutoControlMachineUP.Form1.resources
+G:\作业\大三下学期\物联网大项目（专业综合实训）\上位机\TempAutoControlMachineUP\TempAutoControlMachineUP\obj\Debug\TempAutoControlMachineUP.Properties.Resources.resources
+G:\作业\大三下学期\物联网大项目（专业综合实训）\上位机\TempAutoControlMachineUP\TempAutoControlMachineUP\obj\Debug\UPMachine.csproj.GenerateResource.cache
+G:\作业\大三下学期\物联网大项目（专业综合实训）\上位机\TempAutoControlMachineUP\TempAutoControlMachineUP\obj\Debug\UPMachine.csproj.CoreCompileInputs.cache
+G:\作业\大三下学期\物联网大项目（专业综合实训）\上位机\TempAutoControlMachineUP\TempAutoControlMachineUP\obj\Debug\TempAutoControlMachineUP.exe
+G:\作业\大三下学期\物联网大项目（专业综合实训）\上位机\TempAutoControlMachineUP\TempAutoControlMachineUP\obj\Debug\TempAutoControlMachineUP.pdb

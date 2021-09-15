@@ -1,0 +1,5 @@
+"DS18B20.obj",
+"LCD1602.obj",
+"ProjectMain.obj",
+"Motor_ControlObject.obj" 
+TO "TempControlSystem" 

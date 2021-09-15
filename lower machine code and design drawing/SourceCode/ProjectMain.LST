@@ -1,0 +1,298 @@
+C51 COMPILER V9.00   PROJECTMAIN                                                           09/15/2021 22:34:29 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE PROJECTMAIN
+OBJECT MODULE PLACED IN ProjectMain.OBJ
+COMPILER INVOKED BY: G:\keil\C51\BIN\C51.EXE ProjectMain.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg51.h>
+   2          #include<intrins.h>
+   3          #include<stdio.h>
+   4          #include<stdlib.h>
+   5          #include<string.h>
+   6          
+   7          #define U8INT unsigned char 
+   8          #define U16INT unsigned int 
+   9          #define U32INT unsigned long int
+  10          #define Max_cmd_length 20
+  11          
+  12          sbit MA=P1^0;
+  13          sbit MB=P1^1;
+  14          sbit PWM=P1^2;
+  15          sbit RS=P2^0;
+  16          sbit RW=P2^1;
+  17          sbit EN=P2^2;
+  18          
+  19          sbit LED1_Hot_Waring=P2^4;
+  20          sbit LED2_Cold_Waring=P2^5;
+  21          sbit LED3_Power=P2^6;
+  22          sbit LED4_Light=P2^7;
+  23          sbit SoundPin=P3^7;
+  24          
+  25          
+  26          extern void LCD_Init();
+  27          extern void Display_String(U8INT row,U8INT col,U8INT *str);
+  28          extern void delay_ms(U16INT x);
+  29          extern U8INT Get_Temp16bits();
+  30          extern U8INT Temp_Bytes[];
+  31          
+  32          U8INT Display_TempString[17];
+  33          volatile U8INT Received_Char_Buff[Max_cmd_length+1];
+  34          volatile U8INT Buff_Index=0;
+  35          volatile U8INT Received_Receipt=0;
+  36          
+  37          extern void Wind_Open();
+  38          extern void Wind_Close();
+  39          extern void Light_Open();
+  40          extern void Light_Close();
+  41          volatile float temp=0.00f;//TempF用于存temp完全计算后的结果，因为中途计算结果或者初始化结果输出会引起抖动
+  42          volatile float TempF=0.00f;
+  43          int flag=1;//1:下位机控制权 0：上位机控制权
+  44          
+  45          void Transmit_String(char *str)//把tempf传到SBUF
+  46          {
+  47   1              U8INT i=0;
+  48   1              while(str[i])
+  49   1              {
+  50   2                      SBUF=str[i];
+  51   2                      while(TI==0);
+  52   2                      TI=0;
+  53   2                      i++;
+  54   2              }
+  55   1      }
+C51 COMPILER V9.00   PROJECTMAIN                                                           09/15/2021 22:34:29 PAGE 2   
+
+  56          void Received_DataSPort(void) interrupt 4//串口中断
+  57          { 
+  58   1         static U8INT i=0;//由于中断会多次调用，加static一次之后就不会赋值了
+  59   1         if(RI==0)return ;//有串口中断传进来，RI会置1
+  60   1         RI=0;
+  61   1         
+  62   1         if(SBUF=='$') 
+  63   1         {
+  64   2               i=0;
+  65   2               return;
+  66   2         }
+  67   1         if(SBUF==0x0D)//从上位机到下位机最后传输总是回车加换行
+  68   1         {
+  69   2           return;
+  70   2         }
+  71   1         if(SBUF==0x0A)
+  72   1         {
+  73   2           Received_Receipt=1;
+  74   2         }
+  75   1         else
+  76   1         {
+  77   2               Received_Char_Buff[i]=SBUF;
+  78   2               Received_Char_Buff[++i]='\0';
+  79   2         }
+  80   1         
+  81   1        
+  82   1      }
+  83          void Serial_Port_Init()
+  84          {
+  85   1        SCON=0x50;//0101 0000，方式1,8位计时器可变波特率，ren=1允许接受数据
+  86   1        TMOD=0x20;//8位的计时重载
+  87   1        PCON=0x80;//smod置1，波特率加倍
+  88   1        TH1=0xFA;//根据波特率来设置的，TH高位，TL低位8位计时器
+  89   1        TL1=0xFA;
+  90   1        EA=1;//开中断使能
+  91   1        ES=1;//开启串口中断
+  92   1        TR1=1;//开定时器TR1
+  93   1      }
+  94          /*===================功能函数，tempf的计算,显示和传到SBUF=================================*/
+  95          void Tempf_TransToSBUF(float TempF)
+  96          {
+  97   1              delay_ms(10);   
+  98   1              sprintf(Display_TempString,"%5.1f",TempF);//\xDF\x43
+  99   1              strcat(Display_TempString,"\r\n");
+ 100   1              Transmit_String(Display_TempString);
+ 101   1              strcat(Display_TempString,"\xDF\x43");
+ 102   1              Display_String(1,4,Display_TempString);
+ 103   1              delay_ms(10);
+ 104   1      }
+ 105          
+ 106          
+ 107          /*===================功能函数，tempf的计算和传到SBUF=================================*/
+ 108          
+ 109          /*===================电机正，反，停转=================================*/
+ 110          void Right_Spin(float TempF)
+ 111          {
+ 112   1              MA=1;//高电位正转
+ 113   1              MB=0;            
+ 114   1              PWM=1;//加速
+ 115   1              delay_ms(TempF-36);
+ 116   1              PWM=0;//降速
+ 117   1      
+C51 COMPILER V9.00   PROJECTMAIN                                                           09/15/2021 22:34:29 PAGE 3   
+
+ 118   1      }
+ 119          
+ 120          void Left_Spin(float TempF)
+ 121          {
+ 122   1              MA=0;//低电位反转
+ 123   1              MB=1;            
+ 124   1              PWM=1;//加速
+ 125   1              delay_ms(10-TempF);
+ 126   1              PWM=0;//降速
+ 127   1              delay_ms(TempF-0);
+ 128   1      
+ 129   1      }
+ 130          
+ 131          void Stop_Spin()
+ 132          {
+ 133   1              MA=0;
+ 134   1              MB=0;
+ 135   1      }
+ 136          
+ 137          /*===================电机正，反，停转=================================*/
+ 138           
+ 139          /*===================上位机事件，响铃，重置，升温，降温=================================*/
+ 140          void Ring_Open()//响铃
+ 141          {
+ 142   1              U8INT i=0;
+ 143   1              SoundPin=0;
+ 144   1              for(i=0;i<100;i++)
+ 145   1              {
+ 146   2                      SoundPin=!SoundPin;delay_ms(1);
+ 147   2              }
+ 148   1              delay_ms(300);
+ 149   1      }
+ 150          
+ 151          void Temp_Up(float TempF)
+ 152          {
+ 153   1              flag=0;
+ 154   1              Tempf_TransToSBUF(TempF);
+ 155   1              
+ 156   1      }
+ 157          void Temp_Down(float TempF)
+ 158          {
+ 159   1              flag=0;
+ 160   1              Tempf_TransToSBUF(TempF);
+ 161   1              
+ 162   1      }
+ 163          /*===================上位机事件，响铃，重置，升温，降温=================================*/
+ 164          
+ 165          /*===================根据温度控制LED和警报===================*/
+ 166          void TempControl(float TempF)
+ 167          {
+ 168   1                      delay_ms(10);
+ 169   1                      if(TempF>100) 
+ 170   1                      {
+ 171   2                              TempF=100;
+ 172   2                      }
+ 173   1                      if(TempF>=10&&TempF<=36)//10~36 不动
+ 174   1                      {
+ 175   2                              LED1_Hot_Waring=0;
+ 176   2                              LED2_Cold_Waring=0;
+ 177   2                              Stop_Spin();
+ 178   2                      }
+ 179   1                      else if(TempF>36&&TempF<=60)//36~60 正转，两灯灭
+C51 COMPILER V9.00   PROJECTMAIN                                                           09/15/2021 22:34:29 PAGE 4   
+
+ 180   1                      {
+ 181   2                              LED1_Hot_Waring=0;
+ 182   2                              LED2_Cold_Waring=0;
+ 183   2                              Right_Spin(TempF);
+ 184   2                      }
+ 185   1                      else if(TempF>=0&&TempF<=10)//0~10 反转，亮冷灯
+ 186   1                      {
+ 187   2                              LED1_Hot_Waring=0;
+ 188   2                              LED2_Cold_Waring=1;
+ 189   2                              Left_Spin(TempF);
+ 190   2                      }
+ 191   1                      else if(TempF>=60&&TempF<=100)//温度在60以上响铃报警，亮热灯
+ 192   1                      {
+ 193   2                               LED1_Hot_Waring=1;
+ 194   2                               LED2_Cold_Waring=0;
+ 195   2                               Ring_Open();
+ 196   2                      }
+ 197   1                      
+ 198   1                      delay_ms(10);
+ 199   1      }
+ 200          /*===================根据温度控制LED和警报===================*/
+ 201          void main()
+ 202          {   
+ 203   1           
+ 204   1         Serial_Port_Init();
+ 205   1         LCD_Init();
+ 206   1         
+ 207   1         Display_String(0,0,"TempControlSystem");
+ 208   1         Display_String(1,0,"  Waiting.....");
+ 209   1         Get_Temp16bits();
+ 210   1         delay_ms(1000);
+ 211   1         Display_String(1,0,"              ");
+ 212   1         while(1)
+ 213   1         {
+ 214   2           if(Get_Temp16bits()&&flag==1)
+ 215   2               {
+ 216   3                  temp=(int)((Temp_Bytes[1]<<8)|Temp_Bytes[0])*0.0625;
+ 217   3                      TempF=temp;
+ 218   3                      Tempf_TransToSBUF(TempF);//tempf的计算和传到SBUF
+ 219   3                      TempControl(TempF);//根据温度给出反应
+ 220   3               }
+ 221   2               if(Received_Receipt==1)
+ 222   2               {
+ 223   3                      Received_Receipt=0;
+ 224   3                      
+ 225   3                      if(strcmp(Received_Char_Buff,"RING_OPEN")==0)
+ 226   3                      {
+ 227   4                               Ring_Open();//响铃
+ 228   4                      }
+ 229   3                      else if(strcmp(Received_Char_Buff,"TEMP_UP")==0)
+ 230   3                      {
+ 231   4                               Temp_Up(++TempF);//+1℃
+ 232   4                               TempControl(TempF);//根据温度给出反应
+ 233   4                      }
+ 234   3                  else if(strcmp(Received_Char_Buff,"TEMP_DOWN")==0)
+ 235   3                      {
+ 236   4                               Temp_Down(--TempF);//-1℃
+ 237   4                               TempControl(TempF);//根据温度给出反应
+ 238   4                      }
+ 239   3                      else if(strcmp(Received_Char_Buff,"WIND_OPEN")==0)
+ 240   3                      {
+ 241   4                               Wind_Open();
+C51 COMPILER V9.00   PROJECTMAIN                                                           09/15/2021 22:34:29 PAGE 5   
+
+ 242   4                      }
+ 243   3                      else if(strcmp(Received_Char_Buff,"WIND_CLOSE")==0)
+ 244   3                      {
+ 245   4                               Wind_Close();
+ 246   4                      }
+ 247   3                      else if(strcmp(Received_Char_Buff,"LIGHT_OPEN")==0)
+ 248   3                      {
+ 249   4                               Light_Open();
+ 250   4                      }
+ 251   3                      else if(strcmp(Received_Char_Buff,"LIGHT_CLOSE")==0)
+ 252   3                      {
+ 253   4                               Light_Close();
+ 254   4                      }
+ 255   3                      if(flag==0)
+ 256   3                      {
+ 257   4                              if(strcmp(Received_Char_Buff,"RESET")==0)
+ 258   4                              {       
+ 259   5                                      Ring_Open();             
+ 260   5                                      flag=1;
+ 261   5                              }
+ 262   4                      }
+ 263   3                                        
+ 264   3                }
+ 265   2                TempControl(TempF);//上位机接替控制权后也能警报
+ 266   2         }
+ 267   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1038    ----
+   CONSTANT SIZE    =    138    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     51      20
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
