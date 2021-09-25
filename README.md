@@ -19,7 +19,7 @@ lower machine code and design drawing	下位机源代码和keil项目文件
 
 2,上位机打开COM4，下位机默认是COM3，双击下位机的MAX232模块可以更改默认端口
 
-3,打开TempAutoControlMachineUP.exe，打开lower machine code and design drawing下的DSN文件，DSN文件打开方式proteus 7 professional
+3,打开TempAutoControlMachineUP.exe，打开lower machine code and design drawing下的DSN文件，DSN文件打开方式proteus 8 professional
 
 4，上位机选择COM4端口，下位机仿真，根据所见进行摸索吧。
 
