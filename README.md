@@ -15,9 +15,13 @@ lower machine code and design drawing	下位机源代码和keil项目文件
 
 使用说明：
 
-下载VSPD虚拟串口模拟，建立COM3,COM4串口
+1,下载VSPD虚拟串口模拟，建立COM3,COM4串口
 
-上位机打开COM4，下位机默认是COM3，双击下位机的MAX232模块可以改
+2,上位机打开COM4，下位机默认是COM3，双击下位机的MAX232模块可以更改默认端口
+
+3,打开TempAutoControlMachineUP.exe，打开lower machine code and design drawing下的DSN文件，DSN文件打开方式proteus 7 professional
+
+4，上位机选择COM4端口，下位机仿真，根据所见进行摸索吧。
 
 上位机功能：
 
@@ -43,3 +47,6 @@ lower machine code and design drawing	下位机源代码和keil项目文件
 60度以上，电机加速正转，亮“过热灯”，警报响起；
 
 2，LED状态指示灯显示
+
+PS:老师说过的软件硬件之间通信需要延时，指的是代码里面，如果操作经过设置某个端口或者针脚拉高拉低那些
+属于操作硬件的部分，需要用延时套住，不然由于编译导致代码乱序，触及计算的部分会因为乱序而不准
