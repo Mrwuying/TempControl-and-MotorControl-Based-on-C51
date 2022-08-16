@@ -2,9 +2,11 @@
   这是我大二时的一个课程设计，利用proteus 8 professional上进行仿真开发C51的项目，keil 4 编写C51代码
   
   下位机仿真图：
+  
    ![image](https://github.com/Mrwuying/TempControl-and-MotorControl-Based-on-C51/blob/master/%E4%B8%8B%E4%BD%8D%E6%9C%BAPCB%E4%BB%BF%E7%9C%9F.png)
    
    上位机程序图：
+   
    ![image](https://github.com/Mrwuying/TempControl-and-MotorControl-Based-on-C51/blob/master/%E4%B8%8A%E4%BD%8D%E6%9C%BA%E7%A8%8B%E5%BA%8F%E9%A2%84%E8%A7%88.png)
    
 
@@ -37,8 +39,8 @@ DSN文件打开如图：
 
 ### 下位机功能
 1、温度影响左下直流电机。
-  [0~10)摄氏度，亮“过冷灯”，电机加速反转；
-  [10~36]摄氏度，没事发生；
-  (36~60]摄氏度，电机加速正转；
-  60度以上，电机加速正转，亮“过热灯”，警报响起；
+[0~10)摄氏度，亮“过冷灯”，电机加速反转
+[10~36]摄氏度，没事发生
+(36~60]摄氏度，电机加速正转
+60度以上，电机加速正转，亮“过热灯”，警报响起
 2、LED状态指示灯显示
