@@ -16,7 +16,7 @@
 
 根据温度亮报警灯和蜂鸣器。
 
-上位机控制。
+上位机控制下位机仿真。
 
 ### 文件说明
 TempAutoControlMachineUP.exe 上位机程序
