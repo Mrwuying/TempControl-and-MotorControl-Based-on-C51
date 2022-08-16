@@ -1,9 +1,12 @@
 ### 简介
   这是我大二时的一个课程设计，利用proteus 8 professional上进行仿真开发C51的项目，keil 4 编写C51代码
+  
   下位机仿真图：
    ![image](https://github.com/Mrwuying/TempControl-and-MotorControl-Based-on-C51/blob/master/%E4%B8%8B%E4%BD%8D%E6%9C%BAPCB%E4%BB%BF%E7%9C%9F.png)
+   
    上位机程序图：
    ![image](https://github.com/Mrwuying/TempControl-and-MotorControl-Based-on-C51/blob/master/%E4%B8%8A%E4%BD%8D%E6%9C%BA%E7%A8%8B%E5%BA%8F%E9%A2%84%E8%A7%88.png)
+   
 
 ### 主要功能有：
 根据温度控制电机正转、反转。
